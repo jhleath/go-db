@@ -1,7 +1,6 @@
 package db
 
 import (
-	"github.com/jmoiron/sqlx"
 	"reflect"
 )
 
@@ -113,7 +112,7 @@ type BasicTable struct {
 	TableName string
 	Fieldset  []Field
 	Key       string
-	DB        *sqlx.DB
+	DB        Executor
 }
 
 func ConvertKindToDB(r reflect.Kind) string {
@@ -132,7 +131,7 @@ func ConvertKindToDB(r reflect.Kind) string {
 	return "unknown"
 }
 
-func CreateTableFromStruct(name string, db *sqlx.DB, force bool, object interface{}) (*BasicTable, error) {
+func CreateTableFromStruct(name string, db Executor, force bool, object interface{}) (*BasicTable, error) {
 	// Create Table Struct
 	out := &BasicTable{
 		TableName: name,
