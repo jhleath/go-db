@@ -19,9 +19,17 @@ Utilizes ActiveRecord-like syntax (HasOne and HasMany).
 
 Special Types
 
-- **db.PrimaryKey** - Specify the auto-incrementing integer that will be used as the Primary Key for the table.
-- ***db.HasOne**    - Specify a HasOne relationship to another table (ForeignKey). Requires a field tag that specifies the foreign table.
-- ***db.HasMany**   - Specify a reverse to HasOne relationship. Requires field tag that specifies the table and column.
+##### db.PrimaryKey
+
+Specify the auto-incrementing integer that will be used as the Primary Key for the table.
+
+##### *db.HasOne
+
+Specify a HasOne relationship to another table (ForeignKey). Requires a field tag that specifies the foreign table.
+
+##### *db.HasMany
+
+Specify a reverse to HasOne relationship. Requires field tag that specifies the table and column.
 
 
     type Story struct {
