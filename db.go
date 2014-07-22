@@ -15,7 +15,7 @@ type Executor interface {
 }
 
 //
-func ToSnakeCase(x string) string {
+func toSnakeCase(x string) string {
 	if len(x) == 0 {
 		return ""
 	}
@@ -48,7 +48,7 @@ func ToSnakeCase(x string) string {
 }
 
 //
-func ToCamelCase(x string) string {
+func toCamelCase(x string) string {
 	if len(x) == 0 {
 		return ""
 	}
@@ -82,7 +82,7 @@ func ToCamelCase(x string) string {
 }
 
 //
-func MapUnion(x map[string]interface{}, y map[string]interface{}) map[string]interface{} {
+func mapUnion(x map[string]interface{}, y map[string]interface{}) map[string]interface{} {
 	z := make(map[string]interface{})
 	if x != nil {
 		for key, value := range x {
@@ -93,7 +93,7 @@ func MapUnion(x map[string]interface{}, y map[string]interface{}) map[string]int
 		for key, value := range y {
 			_, ok := z[key]
 			if ok {
-				panic("MapUnion will overwrite.")
+				panic("mapUnion will overwrite.")
 			}
 			z[key] = value
 		}
@@ -111,7 +111,7 @@ func JoinClausesOn(c []Clause, on string) (string, map[string]interface{}) {
 		}
 		tempStmt, tempObjects := v.Compile()
 		outStmt += tempStmt
-		outObj = MapUnion(outObj, tempObjects)
+		outObj = mapUnion(outObj, tempObjects)
 	}
 	return outStmt, outObj
 }

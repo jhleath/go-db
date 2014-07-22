@@ -34,7 +34,7 @@ func (f *HasOne) Set(obj interface{}) {
 
 type PrimaryKey int
 
-var PrimaryType = reflect.TypeOf(PrimaryKey(0)).Elem()
+var primaryKeyType = reflect.TypeOf(PrimaryKey(0)).Elem()
 
-var HasOneType = reflect.TypeOf(HasOne{})
-var HasManyType = reflect.TypeOf(HasMany{})
+var hasOneType = reflect.TypeOf(HasOne{})
+var hasManyType = reflect.TypeOf(HasMany{})

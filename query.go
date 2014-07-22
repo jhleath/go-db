@@ -26,19 +26,19 @@ func (c *SelectStatement) Compile() (string, map[string]interface{}) {
 	if c.WhereClause != nil {
 		whereStmt, whereObj := c.WhereClause.Compile()
 		outStatement = fmt.Sprintf("%s WHERE (%s)", outStatement, whereStmt)
-		outObjects = MapUnion(outObjects, whereObj)
+		outObjects = mapUnion(outObjects, whereObj)
 	}
 
 	if c.OrderClause != nil {
 		orderStmt, orderObj := c.OrderClause.Compile()
 		outStatement = fmt.Sprintf("%s ORDER BY %s", outStatement, orderStmt)
-		outObjects = MapUnion(outObjects, orderObj)
+		outObjects = mapUnion(outObjects, orderObj)
 	}
 
 	if c.LimitClause != nil {
 		limitStmt, limitObj := c.LimitClause.Compile()
 		outStatement = fmt.Sprintf("%s LIMIT %s", outStatement, limitStmt)
-		outObjects = MapUnion(outObjects, limitObj)
+		outObjects = mapUnion(outObjects, limitObj)
 	}
 
 	return outStatement, outObjects

@@ -5,8 +5,8 @@ import (
 	"fmt"
 )
 
-type InsertHandler func(int64)
-type StatementHandler func()
+type insertHandler func(int64)
+type statementHandler func()
 
 type Statement interface {
 	Exec(db Executor) (sql.Result, error)
@@ -15,7 +15,7 @@ type Statement interface {
 type InsertStatement struct {
 	Table    string
 	Values   map[string]interface{}
-	postExec InsertHandler
+	postExec insertHandler
 }
 
 func (c *InsertStatement) Compile() (string, map[string]interface{}) {
@@ -49,14 +49,14 @@ type UpdateStatement struct {
 	Table    string
 	Where    Clause
 	Columns  Clause
-	postExec StatementHandler
+	postExec statementHandler
 }
 
 func (c *UpdateStatement) Compile() (string, map[string]interface{}) {
 	where, whereObjects := c.Where.Compile()
 	set, setObjects := c.Columns.Compile()
 
-	return fmt.Sprintf("UPDATE %s SET %s WHERE %s", c.Table, set, where), MapUnion(whereObjects, setObjects)
+	return fmt.Sprintf("UPDATE %s SET %s WHERE %s", c.Table, set, where), mapUnion(whereObjects, setObjects)
 }
 
 func (c *UpdateStatement) Exec(db Executor) (sql.Result, error) {

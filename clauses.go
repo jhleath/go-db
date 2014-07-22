@@ -5,9 +5,9 @@ import (
 )
 
 const (
-	SQLAnd   = " AND "
-	SQLOr    = " OR "
-	SQLComma = ", "
+	sqlAnd   = " AND "
+	sqlOr    = " OR "
+	sqlComma = ", "
 )
 
 type Clause interface {
@@ -39,21 +39,21 @@ func (c OrderClause) Compile() (string, map[string]interface{}) {
 type AndClauses []Clause
 
 func (c AndClauses) Compile() (string, map[string]interface{}) {
-	return JoinClausesOn(c, SQLAnd)
+	return JoinClausesOn(c, sqlAnd)
 }
 
 // SQL Or Clauses
 type OrClauses []Clause
 
 func (c OrClauses) Compile() (string, map[string]interface{}) {
-	return JoinClausesOn(c, SQLOr)
+	return JoinClausesOn(c, sqlOr)
 }
 
 // SQL Set Clause
 type SetClause []Clause
 
 func (c SetClause) Compile() (string, map[string]interface{}) {
-	return JoinClausesOn(c, SQLComma)
+	return JoinClausesOn(c, sqlComma)
 }
 
 // Basic Variable Equality

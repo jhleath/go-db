@@ -5,12 +5,12 @@ import (
 	"reflect"
 )
 
-type handlePrimaryType func(PrimaryKey, string)
-type handleHasOneType func(*HasOne, string)
-type handleHasManyType func(*HasMany, string)
+type handleprimaryKeyType func(PrimaryKey, string)
+type handlehasOneType func(*HasOne, string)
+type handlehasManyType func(*HasMany, string)
 type handleDefaultType func(interface{}, reflect.Kind, string)
 
-func examineObject(object interface{}, pt handlePrimaryType, ho handleHasOneType, hm handleHasManyType, d handleDefaultType) {
+func examineObject(object interface{}, pt handleprimaryKeyType, ho handlehasOneType, hm handlehasManyType, d handleDefaultType) {
 	// Value of Object
 	val := reflect.ValueOf(object).Elem()
 
@@ -20,15 +20,15 @@ func examineObject(object interface{}, pt handlePrimaryType, ho handleHasOneType
 		typeField := val.Type().Field(i)
 
 		switch typeField.Type {
-		case PrimaryType:
+		case primaryKeyType:
 			if pt != nil {
 				pt(valueField.Interface().(PrimaryKey), typeField.Name)
 			}
-		case HasOneType:
+		case hasOneType:
 			if ho != nil {
 				ho(valueField.Interface().(*HasOne), typeField.Name)
 			}
-		case HasManyType:
+		case hasManyType:
 			if hm != nil {
 				hm(valueField.Interface().(*HasMany), typeField.Name)
 			}
@@ -52,7 +52,7 @@ func loadRelationships(object interface{}, id int64) {
 
 	if id == -1 {
 		for i := 0; i < val.NumField(); i++ {
-			if val.Type().Field(i).Type == PrimaryType {
+			if val.Type().Field(i).Type == primaryKeyType {
 				id = int64(val.Field(i).Interface().(PrimaryKey))
 			}
 		}
@@ -68,7 +68,7 @@ func loadRelationships(object interface{}, id int64) {
 		foreignColumn := typeField.Tag.Get("on")
 
 		switch typeField.Type {
-		case HasOneType:
+		case hasOneType:
 			// Current Field Value
 			current := valueField.Interface().(*HasOne)
 			// Default to Id for Foreign Column
@@ -81,16 +81,16 @@ func loadRelationships(object interface{}, id int64) {
 				column: foreignColumn,
 			}
 			hasOne.SelectStatement = (&SelectStatement{
-				Table: ToSnakeCase(foreignTable),
-			}).Where(ToSnakeCase(foreignColumn), current.Value)
+				Table: toSnakeCase(foreignTable),
+			}).Where(toSnakeCase(foreignColumn), current.Value)
 			// Set New Value
 			valueField.Set(reflect.ValueOf(hasOne))
-		case HasManyType:
+		case hasManyType:
 			// Load Into New Value
 			hasMany := &HasMany{}
 			hasMany.SelectStatement = (&SelectStatement{
-				Table: ToSnakeCase(foreignTable),
-			}).Where(ToSnakeCase(foreignColumn), id)
+				Table: toSnakeCase(foreignTable),
+			}).Where(toSnakeCase(foreignColumn), id)
 			// Set New Value
 			valueField.Set(reflect.ValueOf(hasMany))
 		}
@@ -144,21 +144,21 @@ func CreateTableFromStruct(name string, db *sqlx.DB, force bool, object interfac
 	examineObject(object,
 		func(p PrimaryKey, name string) {
 			out.Fieldset = append(out.Fieldset, Field{
-				Name: ToSnakeCase(name),
+				Name: toSnakeCase(name),
 				Type: ConvertKindToDB(reflect.Int),
 			})
 			out.Key = name
 		},
 		func(p *HasOne, name string) {
 			out.Fieldset = append(out.Fieldset, Field{
-				Name: ToSnakeCase(name + "Id"),
+				Name: toSnakeCase(name),
 				Type: ConvertKindToDB(reflect.Int),
 			})
 		},
 		nil,
 		func(p interface{}, r reflect.Kind, name string) {
 			out.Fieldset = append(out.Fieldset, Field{
-				Name: ToSnakeCase(name),
+				Name: toSnakeCase(name),
 				Type: ConvertKindToDB(r),
 			})
 		})
@@ -189,42 +189,43 @@ func (b BasicTable) GetBy(object interface{}, key string, value interface{}) err
 
 func (b BasicTable) Delete(object interface{}) *DeleteStatement {
 	id := 0
+	idField := ""
 
 	examineObject(object, func(p PrimaryKey, n string) {
 		id = int(p)
+		idField = n
 	}, nil, nil, nil)
 
 	return &DeleteStatement{
 		Table: b.TableName,
 		Where: &NamedEquality{
-			Name:  "id",
+			Name:  idField,
 			Value: id,
 		},
 	}
 }
 
 func (b BasicTable) Update(object interface{}) *UpdateStatement {
-	if reflect.TypeOf(object).Kind() == reflect.Ptr {
-		// Change the Fields, yo.
-	}
-
 	id := 0
+	idField := ""
+
 	columnsClause := make(SetClause, 0)
 
 	examineObject(object,
 		func(p PrimaryKey, n string) {
 			id = int(p)
+			idField = n
 		},
 		func(ho *HasOne, name string) {
 			columnsClause = append(columnsClause, &NamedEquality{
-				Name:  ToSnakeCase(name + "Id"),
+				Name:  toSnakeCase(name),
 				Value: ho.Value,
 			})
 		},
 		nil,
 		func(d interface{}, r reflect.Kind, name string) {
 			columnsClause = append(columnsClause, &NamedEquality{
-				Name:  ToSnakeCase(name),
+				Name:  toSnakeCase(name),
 				Value: d,
 			})
 		})
@@ -232,7 +233,7 @@ func (b BasicTable) Update(object interface{}) *UpdateStatement {
 	return &UpdateStatement{
 		Table: b.TableName,
 		Where: &NamedEquality{
-			Name:  "id",
+			Name:  idField,
 			Value: id,
 		},
 		Columns: columnsClause,
@@ -243,20 +244,16 @@ func (b BasicTable) Update(object interface{}) *UpdateStatement {
 }
 
 func (b BasicTable) Insert(object interface{}) *InsertStatement {
-	if reflect.TypeOf(object).Kind() == reflect.Ptr {
-		// Change the Fields, yo.
-	}
-
 	values := make(map[string]interface{})
 
 	examineObject(object,
 		nil,
 		func(ho *HasOne, name string) {
-			values[ToSnakeCase(name+"Id")] = ho
+			values[toSnakeCase(name)] = ho
 		},
 		nil,
 		func(d interface{}, r reflect.Kind, name string) {
-			values[ToSnakeCase(name)] = d
+			values[toSnakeCase(name)] = d
 		})
 
 	return &InsertStatement{
