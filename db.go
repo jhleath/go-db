@@ -21,6 +21,7 @@ func toSnakeCase(x string) string {
 	}
 
 	output := make([]byte, 0)
+	first := true
 	for len(x) > 0 {
 		v, size := utf8.DecodeRuneInString(x)
 
@@ -37,7 +38,11 @@ func toSnakeCase(x string) string {
 				// Lowercase it otherwise.
 				buf := make([]byte, size)
 				utf8.EncodeRune(buf, unicode.ToLower(v))
-				output = bytes.Join([][]byte{output, buf}, []byte("_"))
+				if first {
+					output = buf
+				} else {
+					output = bytes.Join([][]byte{output, buf}, []byte("_"))
+				}
 			}
 		}
 

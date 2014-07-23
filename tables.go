@@ -67,6 +67,8 @@ func loadRelationships(object interface{}, id int64) {
 		foreignColumn := typeField.Tag.Get("on")
 
 		switch typeField.Type {
+		case primaryKeyType:
+			valueField.SetInt(id)
 		case hasOneType:
 			// Current Field Value
 			current := valueField.Interface().(*HasOne)
@@ -146,7 +148,7 @@ func CreateTableFromStruct(name string, db Executor, force bool, object interfac
 				Name: toSnakeCase(name),
 				Type: ConvertKindToDB(reflect.Int),
 			})
-			out.Key = name
+			out.Key = toSnakeCase(name)
 		},
 		func(p *HasOne, name string) {
 			out.Fieldset = append(out.Fieldset, Field{
@@ -192,7 +194,7 @@ func (b BasicTable) Delete(object interface{}) *DeleteStatement {
 
 	examineObject(object, func(p PrimaryKey, n string) {
 		id = int(p)
-		idField = n
+		idField = toSnakeCase(n)
 	}, nil, nil, nil)
 
 	return &DeleteStatement{
@@ -213,7 +215,7 @@ func (b BasicTable) Update(object interface{}) *UpdateStatement {
 	examineObject(object,
 		func(p PrimaryKey, n string) {
 			id = int(p)
-			idField = n
+			idField = toSnakeCase(n)
 		},
 		func(ho *HasOne, name string) {
 			columnsClause = append(columnsClause, &NamedEquality{
@@ -248,7 +250,7 @@ func (b BasicTable) Insert(object interface{}) *InsertStatement {
 	examineObject(object,
 		nil,
 		func(ho *HasOne, name string) {
-			values[toSnakeCase(name)] = ho
+			values[toSnakeCase(name)] = ho.Value
 		},
 		nil,
 		func(d interface{}, r reflect.Kind, name string) {

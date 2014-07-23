@@ -21,6 +21,17 @@ type HasOne struct {
 	column string
 }
 
+func ForeignKey(obj interface{}) *HasOne {
+	id := -1
+	examineObject(obj,
+		func(p PrimaryKey, n string) {
+			id = int(p)
+		}, nil, nil, nil)
+	return &HasOne{
+		Value: id,
+	}
+}
+
 func (f *HasOne) Set(obj interface{}) {
 	id := -1
 	examineObject(obj,
@@ -34,7 +45,7 @@ func (f *HasOne) Set(obj interface{}) {
 
 type PrimaryKey int
 
-var primaryKeyType = reflect.TypeOf(PrimaryKey(0)).Elem()
+var primaryKeyType = reflect.TypeOf(PrimaryKey(0))
 
-var hasOneType = reflect.TypeOf(HasOne{})
-var hasManyType = reflect.TypeOf(HasMany{})
+var hasOneType = reflect.TypeOf((*HasOne)(nil))
+var hasManyType = reflect.TypeOf((*HasMany)(nil))
