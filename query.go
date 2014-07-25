@@ -83,10 +83,15 @@ func (q *SelectStatement) Where(key string, value interface{}) *SelectStatement 
 }
 
 func (q *SelectStatement) One(db Executor, object interface{}) error {
+	q.Limit(1)
 	stmt, obj := q.Compile()
 	rows, err := db.NamedQuery(stmt, obj)
 	if err != nil {
 		return err
+	}
+
+	if !rows.Next() {
+		return nil
 	}
 
 	return rows.StructScan(object)
