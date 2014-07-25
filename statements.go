@@ -26,7 +26,7 @@ func (c *InsertStatement) Compile() (string, map[string]interface{}) {
 			columns += ", "
 			values += ", "
 		}
-		columns += key
+		columns += `"` + key + `"`
 		values += (":" + key)
 	}
 	return fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", c.Table, columns, values), c.Values
@@ -101,7 +101,7 @@ func (c *CreateTableStatement) Compile() (string, map[string]interface{}) {
 		if i != 0 {
 			columns += ", "
 		}
-		columns += fmt.Sprintf("%s %s", v.Name, v.Type)
+		columns += fmt.Sprintf("\"%s\" %s", v.Name, v.Type)
 	}
 
 	if c.Key != "" {

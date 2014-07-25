@@ -66,5 +66,5 @@ func (c *NamedEquality) Compile() (string, map[string]interface{}) {
 	object := make(map[string]interface{})
 	name := fmt.Sprintf("variable_%s", c.Name)
 	object[name] = c.Value
-	return fmt.Sprintf("%s = :%s", c.Name, name), object
+	return fmt.Sprintf("\"%s\" = :%s", c.Name, name), object
 }
