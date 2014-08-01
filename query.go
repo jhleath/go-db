@@ -90,6 +90,7 @@ func (q *SelectStatement) One(db Executor, object interface{}) error {
 	if err != nil {
 		return err
 	}
+	defer rows.Rows.Close()
 
 	if !rows.Next() {
 		return nil
@@ -104,6 +105,7 @@ func (q *SelectStatement) All(db Executor, object interface{}) error {
 	if err != nil {
 		return err
 	}
+	defer rows.Rows.Close()
 
 	return sqlx.StructScan(rows, object)
 }

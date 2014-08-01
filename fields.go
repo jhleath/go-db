@@ -1,8 +1,6 @@
 package db
 
-import (
-	"reflect"
-)
+import "reflect"
 
 // story.author     (parent <- child)
 // SELECT * FROM AUTHOR WHERE ID = ?
