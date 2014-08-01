@@ -3,17 +3,19 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"github.com/jmoiron/sqlx"
 	"strings"
 	"testing"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type Story struct {
-	Id     PrimaryKey
-	Name   string
-	Body   string
-	Slug   string
-	Author *HasOne `table:"author"`
+	Id       PrimaryKey
+	Name     string
+	Body     string
+	Slug     string
+	SlugBody string
+	Author   *HasOne `table:"author"`
 }
 
 type Author struct {

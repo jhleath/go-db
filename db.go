@@ -3,9 +3,10 @@ package db
 import (
 	"bytes"
 	"database/sql"
-	"github.com/jmoiron/sqlx"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/jmoiron/sqlx"
 )
 
 //
@@ -40,6 +41,7 @@ func toSnakeCase(x string) string {
 				utf8.EncodeRune(buf, unicode.ToLower(v))
 				if first {
 					output = buf
+					first = false
 				} else {
 					output = bytes.Join([][]byte{output, buf}, []byte("_"))
 				}
