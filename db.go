@@ -15,6 +15,10 @@ type Executor interface {
 	NamedQuery(query string, arg interface{}) (*sqlx.Rows, error)
 }
 
+func init() {
+	sqlx.NameMapper = toSnakeCase
+}
+
 //
 func toSnakeCase(x string) string {
 	if len(x) == 0 {
