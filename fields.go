@@ -1,6 +1,9 @@
 package db
 
-import "reflect"
+import (
+	"errors"
+	"reflect"
+)
 
 // story.author     (parent <- child)
 // SELECT * FROM AUTHOR WHERE ID = ?
@@ -17,6 +20,16 @@ type HasOne struct {
 	Value int
 	// Internal
 	column string
+}
+
+func (h *HasOne) Scan(src interface{}) error {
+	i, ok := src.(int64)
+	if !ok {
+		return errors.New("Cannot scan non-integer into HasOne field.")
+	}
+
+	h.Value = int(i)
+	return nil
 }
 
 func ForeignKey(obj interface{}) *HasOne {

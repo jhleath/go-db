@@ -4,6 +4,11 @@ import (
 	"reflect"
 )
 
+type Database interface {
+	Executor
+	DriverName() string
+}
+
 type handleprimaryKeyType func(PrimaryKey, string)
 type handlehasOneType func(*HasOne, string)
 type handlehasManyType func(*HasMany, string)
@@ -117,14 +122,21 @@ type BasicTable struct {
 	DB        Executor
 }
 
-func ConvertKindToDB(r reflect.Kind) string {
+func ConvertKindToDB(db Database, r reflect.Kind, pk bool) string {
+	if pk && db.DriverName() == "postgres" {
+		return "serial"
+	}
+
 	switch r {
 	case reflect.Int:
 		return "integer"
 	case reflect.String:
 		return "text"
 	case reflect.Slice:
-		return "blob"
+		if db.DriverName() == "postgres" {
+			return "bytea"
+		}
+		return "blob" // bytea
 	case reflect.Float64:
 		return "real"
 	case reflect.Bool:
@@ -133,7 +145,7 @@ func ConvertKindToDB(r reflect.Kind) string {
 	return "unknown"
 }
 
-func CreateTableFromStruct(name string, db Executor, force bool, object interface{}) (*BasicTable, error) {
+func CreateTableFromStruct(name string, db Database, force bool, object interface{}) (*BasicTable, error) {
 	// Create Table Struct
 	out := &BasicTable{
 		TableName: name,
@@ -146,21 +158,21 @@ func CreateTableFromStruct(name string, db Executor, force bool, object interfac
 		func(p PrimaryKey, name string) {
 			out.Fieldset = append(out.Fieldset, Field{
 				Name: toSnakeCase(name),
-				Type: ConvertKindToDB(reflect.Int),
+				Type: ConvertKindToDB(db, reflect.Int, true),
 			})
 			out.Key = toSnakeCase(name)
 		},
 		func(p *HasOne, name string) {
 			out.Fieldset = append(out.Fieldset, Field{
 				Name: toSnakeCase(name),
-				Type: ConvertKindToDB(reflect.Int),
+				Type: ConvertKindToDB(db, reflect.Int, false),
 			})
 		},
 		nil,
 		func(p interface{}, r reflect.Kind, name string) {
 			out.Fieldset = append(out.Fieldset, Field{
 				Name: toSnakeCase(name),
-				Type: ConvertKindToDB(r),
+				Type: ConvertKindToDB(db, r, false),
 			})
 		})
 
