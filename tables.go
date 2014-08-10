@@ -32,7 +32,7 @@ func examineObject(object interface{}, pt handleprimaryKeyType, ho handlehasOneT
 				hm(valueField.Interface().(*HasMany), typeField.Name)
 			}
 		default:
-			if d != nil {
+			if d != nil && typeField.Tag.Get("db") != "-" {
 				d(valueField.Interface(), valueField.Kind(), typeField.Name)
 			}
 		}
