@@ -96,7 +96,19 @@ func (q *SelectStatement) One(db Executor, object interface{}) error {
 		return nil
 	}
 
-	return rows.StructScan(object)
+	err = rows.StructScan(object)
+	if err != nil {
+		return err
+	}
+
+	// Load Relationships
+	id := int64(-1)
+	examineObject(object, func(p PrimaryKey, name string) {
+		id = int64(p)
+	}, nil, nil, nil)
+	loadRelationships(object, id)
+
+	return nil
 }
 
 func (q *SelectStatement) All(db Executor, object interface{}) error {

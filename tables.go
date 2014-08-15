@@ -81,14 +81,20 @@ func loadRelationships(object interface{}, id int64) {
 			if foreignColumn == "" {
 				foreignColumn = "id"
 			}
+
+			value := 0
+			if current != nil {
+				value = current.Value
+			}
 			// Load Into New Value
 			hasOne := &HasOne{
-				Value:  current.Value,
+				Value:  value,
 				column: foreignColumn,
 			}
+
 			hasOne.SelectStatement = (&SelectStatement{
 				Table: toSnakeCase(foreignTable),
-			}).Where(toSnakeCase(foreignColumn), current.Value)
+			}).Where(toSnakeCase(foreignColumn), value)
 			// Set New Value
 			valueField.Set(reflect.ValueOf(hasOne))
 		case hasManyType:
@@ -100,6 +106,12 @@ func loadRelationships(object interface{}, id int64) {
 			// Set New Value
 			valueField.Set(reflect.ValueOf(hasMany))
 		}
+	}
+}
+
+func scan(object interface{}) {
+	if reflect.TypeOf(object).Kind() != reflect.Ptr {
+		panic("Can't scan into object that isn't a pointer.")
 	}
 }
 
@@ -262,7 +274,12 @@ func (b BasicTable) Insert(object interface{}) *InsertStatement {
 	examineObject(object,
 		nil,
 		func(ho *HasOne, name string) {
-			values[toSnakeCase(name)] = ho.Value
+			value := 0
+			if ho != nil {
+				value = ho.Value
+			}
+
+			values[toSnakeCase(name)] = value
 		},
 		nil,
 		func(d interface{}, r reflect.Kind, name string) {
