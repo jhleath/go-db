@@ -125,6 +125,7 @@ type Table interface {
 	Get() *SelectStatement
 	Update(object interface{}) *UpdateStatement
 	Insert(object interface{}) *InsertStatement
+	Delete(object interface{}) *DeleteStatement
 }
 
 type BasicTable struct {
